@@ -1,0 +1,26 @@
+network:
+  version: 2
+  # renderer: networkd
+
+  ethernets:
+    eth0:
+      dhcp4: true
+      dhcp4-overrides:
+        route-metric: 100
+
+  wifis:
+    wlan0:
+      optional: true
+      dhcp4: true
+      dhcp4-overrides:
+        route-metric: 600
+      # ghcp6: false
+      access-points:
+        "Vodafone-8DBAC2":
+          auth:
+            key-management: "psk"
+            password: "S3kNV9724C9wDvtF"
+        "Redmi Note 13 Pro+ 5G":
+          auth:
+            key-management: "psk"
+            password: "mozami1029"
