@@ -13,9 +13,17 @@ spec:
       labels:
         app: gitea
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: server-dedicated
+                    operator: In
+                    values: ["true"]
       containers:
         - name: gitea
-          image: gitea/gitea:1.24
+          image: gitea/gitea:1.25
           ports:
             - containerPort: 3000
             - containerPort: 22
@@ -48,6 +56,14 @@ spec:
       labels:
         app: gitea-postgres
     spec:
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+              - matchExpressions:
+                  - key: server-dedicated
+                    operator: In
+                    values: ["true"]
       containers:
         - name: gitea-postgres
           image: postgres:16
