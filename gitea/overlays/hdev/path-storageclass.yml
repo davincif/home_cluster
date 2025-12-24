@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: StorageClass
+metadata:
+  name: gitea-hdev-nonexpand
+provisioner: rancher.io/local-path
+allowVolumeExpansion: false
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Delete

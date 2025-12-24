@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Kustomization
+
+namespace: hprod
+
+resources:
+  - ../../base
+
+patches:
+  - path: patch-deployment.yml

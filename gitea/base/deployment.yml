@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gitea
-  namespace: hdev
+  namespace: hprod
 spec:
   replicas: 2
   selector:
@@ -45,7 +45,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gitea-postgres
-  namespace: hdev
+  namespace: hprod
 spec:
   replicas: 1
   selector:

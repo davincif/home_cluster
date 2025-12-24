@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Kustomization
+
+namespace: hdev
+
+resources:
+  - ../../base
+  # - storageclass.yml
+
+patches:
+  - path: patch-deployment.yml
+  - path: patch-pvc.yml
+  - path: path-storageclass.yml

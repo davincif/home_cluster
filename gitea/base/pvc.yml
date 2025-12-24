@@ -2,23 +2,23 @@ apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: gitea-pvc
-  namespace: hdev
+  namespace: hprod
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 10Gi
+      storage: 2Gi
 
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: gitea-postgres-pvc
-  namespace: hdev
+  namespace: hprod
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi
+      storage: 8Gi

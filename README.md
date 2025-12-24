@@ -20,5 +20,4 @@ sudo kubectl label node pi03 server-dedicated=true --overwrite
 
 Creating namespace
 sudo kubectl create namespace prod
-
 -->

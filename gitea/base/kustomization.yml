@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: Kustomization
+
+resources:
+  - configmap.yml
+  - deployment.yml
+  - ingress.yml
+  - pvc.yml
+  - secret.yml
+  - service.yml

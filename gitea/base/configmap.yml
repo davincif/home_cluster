@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: gitea-config
-  namespace: hdev
+  namespace: hprod
 data:
   GITEA__database__DB_TYPE: postgres
   GITEA__database__HOST: gitea-postgres:5432
