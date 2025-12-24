@@ -1,0 +1,151 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Home Lab Cluster CLI (hlccli)
+# Usage:
+#   ./hlccli wave off
+#   ./hlccli wave on
+#   ./hlccli wave off -wf|--wifi [-bl|--bluetooth]
+#   ./hlccli wave on  -wf|--wifi [-bl|--bluetooth]
+
+show_help() {
+  cat <<'EOF'
+Home Lab Cluster CLI (hlccli)
+
+Usage:
+  ./hlccli wave <on|off> [flags]
+
+Commands:
+  wave on|off      Enable/disable wireless radios via rfkill.
+
+Flags (optional):
+  -wf, --wifi          Apply only to Wi-Fi
+  -bl, --bluetooth     Apply only to Bluetooth
+
+Behavior:
+  - With no flags, applies to both Wi-Fi and Bluetooth.
+  - With one or more flags, applies only to the selected radios.
+
+Examples:
+  ./hlccli wave off
+  ./hlccli wave on
+  ./hlccli wave off --wifi
+  ./hlccli wave on -bl
+  ./hlccli wave off -wf -bl
+EOF
+}
+
+require_cmd() {
+  local c="$1"
+  if ! command -v "$c" >/dev/null 2>&1; then
+    echo "[ERROR] Required command not found: $c" >&2
+    exit 127
+  fi
+}
+
+run_rfkill() {
+  local action="$1"  # block|unblock
+  local do_wifi="$2" # true|false
+  local do_bt="$3"   # true|false
+
+  require_cmd rfkill
+
+  # Default: if neither flag set, apply to both
+  if [[ "$do_wifi" == false && "$do_bt" == false ]]; then
+    do_wifi=true
+    do_bt=true
+  fi
+
+  if [[ "$do_wifi" == true ]]; then
+    echo "[INFO] rfkill $action wifi"
+    sudo rfkill "$action" wifi
+  fi
+
+  if [[ "$do_bt" == true ]]; then
+    echo "[INFO] rfkill $action bluetooth"
+    sudo rfkill "$action" bluetooth
+  fi
+}
+
+handle_wave() {
+  if [[ $# -lt 1 ]]; then
+    echo "[ERROR] Missing wave action (on|off)." >&2
+    show_help
+    exit 1
+  fi
+
+  local mode="$1"; shift
+  local do_wifi=false
+  local do_bt=false
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -wf|--wifi)
+        do_wifi=true
+        shift
+        ;;
+      -bl|--bluetooth)
+        do_bt=true
+        shift
+        ;;
+      -h|--help)
+        show_help
+        exit 0
+        ;;
+      *)
+        echo "[ERROR] Unknown flag: $1" >&2
+        show_help
+        exit 1
+        ;;
+    esac
+  done
+
+  case "$mode" in
+    off)
+      run_rfkill block "$do_wifi" "$do_bt"
+      ;;
+    on)
+      run_rfkill unblock "$do_wifi" "$do_bt"
+      ;;
+    -h|--help)
+      show_help
+      ;;
+    *)
+      echo "[ERROR] Unknown wave action: $mode (expected on|off)" >&2
+      show_help
+      exit 1
+      ;;
+  esac
+}
+
+uploadme() {
+  scp -r ../RaspbarryPi/ davincif@$PI01_eth:~/Documents/RaspbarryPi && scp -r ../RaspbarryPi/ davincif@$PI02_eth:~/Documents/RaspbarryPi && scp -r ../RaspbarryPi/ davincif@$PI03_eth:~/Documents/RaspbarryPi
+}
+
+main() {
+  if [[ $# -lt 1 ]]; then
+    show_help
+    exit 1
+  fi
+
+  local cmd="$1"; shift
+
+  case "$cmd" in
+    wave)
+      handle_wave "$@"
+      ;;
+    uploadme)
+    uploadme "$@"
+    ;;
+    -h|--help|help)
+      show_help
+      ;;
+    *)
+      echo "[ERROR] Unknown command: $cmd" >&2
+      show_help
+      exit 1
+      ;;
+  esac
+}
+
+main "$@"

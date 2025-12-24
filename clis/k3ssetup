@@ -12,6 +12,51 @@ turnoff_swap() {
   sudo sed -i.bak '/\s\+swap\s\+/ s/^/#/' /etc/fstab || true
 }
 
+# ==========================
+# Raspberry Pi detection
+# ==========================
+
+# Returns 0 if running on a Raspberry Pi, 1 otherwise.
+is_raspberry_pi() {
+  local model=""
+
+  # Best signal: device-tree model
+  for f in /proc/device-tree/model /sys/firmware/devicetree/base/model; do
+    if [[ -r "$f" ]]; then
+      model="$(tr -d '\0' <"$f" 2>/dev/null || true)"
+      if [[ "$model" == *"Raspberry Pi"* ]]; then
+        return 0
+      fi
+    fi
+  done
+
+  # Fallback: device-tree compatible strings
+  for f in /proc/device-tree/compatible /sys/firmware/devicetree/base/compatible; do
+    if [[ -r "$f" ]]; then
+      if tr -d '\0' <"$f" 2>/dev/null | grep -qiE 'raspberrypi|brcm,bcm27|brcm,bcm271'; then
+        return 0
+      fi
+    fi
+  done
+
+  # Last resort: cpuinfo hints (less reliable, but helps)
+  if [[ -r /proc/cpuinfo ]]; then
+    if grep -qiE 'Raspberry Pi|BCM27|BCM271' /proc/cpuinfo; then
+      return 0
+    fi
+  fi
+
+  return 1
+}
+
+detect_is_raspberry() {
+  if is_raspberry_pi; then
+    echo true
+  else
+    echo false
+  fi
+}
+
 # --------------------------
 # Raspberry Pi OS specifics
 # --------------------------
@@ -75,7 +120,6 @@ ensure_rpi_cgroup_params() {
   local changed=false
 
   for param in "${required_params[@]}"; do
-    # Match whole tokens to avoid false positives.
     if ! grep -qw -- "$param" <<<"$current"; then
       updated+=" $param"
       changed=true
@@ -84,7 +128,6 @@ ensure_rpi_cgroup_params() {
 
   if [[ "$changed" == true ]]; then
     echo "[INFO] Updating $cmdline_path to enable required cgroups..."
-    # Write atomically and preserve single-line format.
     sudo sh -c "printf '%s\n' '$updated' > '$cmdline_path'"
     echo "[WARN] Kernel cmdline changed. Reboot is required before starting k3s."
     return 2
@@ -98,17 +141,15 @@ ensure_rpi_cgroup_params() {
 prepare_raspberry_pi_host() {
   ensure_iptables_tools
 
-  # If we changed cmdline, we must reboot for it to take effect.
-  if ! ensure_rpi_cgroup_params; then
-    # Non-zero status other than 2 is a hard error.
-    return 1
-  fi
-
+  ensure_rpi_cgroup_params
   local rc=$?
+
   if [[ $rc -eq 2 ]]; then
     echo "[INFO] Please reboot now: sudo reboot"
-    echo "[INFO] After reboot, re-run: ./k3ssetup install --raspberry"
+    echo "[INFO] After reboot, re-run: ./k3ssetup install"
     exit 0
+  elif [[ $rc -ne 0 ]]; then
+    return 1
   fi
 }
 
@@ -122,6 +163,7 @@ install_k3s() {
   turnoff_swap
 
   if [[ "$is_raspberry" == true ]]; then
+    echo "[INFO] Raspberry Pi detected/enabled. Applying Raspberry prerequisites..."
     prepare_raspberry_pi_host
   fi
 
@@ -139,8 +181,6 @@ test_k3s() {
   fi
 
   k3s --version
-
-  # Use the bundled kubectl to avoid kubeconfig permission surprises.
   sudo k3s kubectl version --client --output=yaml || true
   sudo k3s kubectl get nodes -o wide || true
 
@@ -175,13 +215,18 @@ Commands:
   clean --all               Delete Kubernetes resources (pods, configmaps, secrets) in current namespace.
   remove-k3s                Remove k3s and all its components from the system.
 
+Notes:
+  - Raspberry Pi is auto-detected (no flag needed).
+  - --raspberry forces Raspberry prerequisites.
+
 Options:
   --raspberry               Apply Raspberry Pi OS prerequisites (iptables tools + cgroup cmdline flags).
 EOF
 }
 
 handle_install() {
-  local is_raspberry=false
+  local is_raspberry
+  is_raspberry="$(detect_is_raspberry)"
 
   while [[ $# -gt 0 ]]; do
     case "$1" in

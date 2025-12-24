@@ -39,7 +39,7 @@ metadata:
   name: gitea-postgres
   namespace: hlab
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: gitea-postgres
