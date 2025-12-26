@@ -8,6 +8,8 @@ before everything do:
 sudo apt-get update
 sudo apt-get install -y open-iscsi
 sudo systemctl enable --now iscsid
+# if wanting to add RWM capability
+sudo apt-get install -y nfs-common
 ```
 
 being at the root directory of the this project, therefore outside of the ./longhorn dir, do:

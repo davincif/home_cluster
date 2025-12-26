@@ -1,11 +1,13 @@
 # Gitea — Installation Guide
 
-Install
+Install (preferred — choose environment)
 
 ```sh
-# from repository root
-kubectl apply -k ./gitea
-# or: kustomize build gitea | kubectl apply -f -
+# Home Dev
+kubectl apply -k ./gitea/overlays/hdev
+
+# or Home Prod
+kubectl apply -k ./gitea/overlays/hprod
 ```
 
 Verify

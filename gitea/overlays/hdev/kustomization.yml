@@ -10,4 +10,4 @@ resources:
 patches:
   - path: patch-deployment.yml
   - path: patch-pvc.yml
-  - path: path-storageclass.yml
+  - path: patch-storageclass.yml
