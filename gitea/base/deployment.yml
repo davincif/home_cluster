@@ -4,6 +4,7 @@ metadata:
   name: gitea
   namespace: hprod
 spec:
+  serviceName: "gitea"
   replicas: 2
   selector:
     matchLabels:
@@ -13,20 +14,12 @@ spec:
       labels:
         app: gitea
     spec:
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: server-dedicated
-                    operator: In
-                    values: ["true"]
       containers:
         - name: gitea
           image: gitea/gitea:1.25
-          ports:
-            - containerPort: 3000
-            - containerPort: 22
+          # ports:
+          #   - containerPort: 3000
+          #   - containerPort: 22
           volumeMounts:
             - name: gitea-volume
               mountPath: /data
@@ -39,6 +32,38 @@ spec:
         - name: gitea-volume
           persistentVolumeClaim:
             claimName: gitea-pvc
+      affinity:
+        # prefer the Raspberries fully server dedicated (with ubuntu-server)
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 5
+              preference:
+                matchExpressions:
+                  - key: server-dedicated
+                    operator: In
+                    values: ["true"]
+        # prefer to be provisoned alongwise it's postgress pod
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 10
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values: ["gitea-postgres"]
+                topologyKey: "cluster-name"
+        # strongly prefer to have it's pod provisoned in diferent nodes
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values: ["gitea"]
+                topologyKey: "cluster-name"
 
 ---
 apiVersion: apps/v1
@@ -47,6 +72,7 @@ metadata:
   name: gitea-postgres
   namespace: hprod
 spec:
+  serviceName: "gitea-postgres"
   replicas: 1
   selector:
     matchLabels:
@@ -56,14 +82,6 @@ spec:
       labels:
         app: gitea-postgres
     spec:
-      affinity:
-        nodeAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-              - matchExpressions:
-                  - key: server-dedicated
-                    operator: In
-                    values: ["true"]
       containers:
         - name: gitea-postgres
           image: postgres:16
@@ -79,3 +97,35 @@ spec:
         - name: gitea-postgres-volume
           persistentVolumeClaim:
             claimName: gitea-postgres-pvc
+      affinity:
+        # prefer the Raspberries fully server dedicated (with ubuntu-server)
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 5
+              preference:
+                matchExpressions:
+                  - key: server-dedicated
+                    operator: In
+                    values: ["true"]
+        # prefer to be provisoned alongwise it's gitea pod
+        podAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 10
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values: ["gitea"]
+                topologyKey: "cluster-name"
+        # strongly prefer to have it's pod provisoned in diferent nodes
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: app
+                      operator: In
+                      values: ["gitea-postgres"]
+                topologyKey: "cluster-name"
