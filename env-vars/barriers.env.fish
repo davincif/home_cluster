@@ -19,3 +19,6 @@ set -gx PI02_eth "192.168.1.155"
 
 set -gx PI03_wlan "192.168.1.145"
 set -gx PI03_eth "192.168.1.153"
+
+set -gx PI04_wlan "192.168.1.157"
+set -gx PI04_eth "192.168.1.159"

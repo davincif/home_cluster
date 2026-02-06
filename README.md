@@ -20,4 +20,12 @@ sudo kubectl label node pi03 server-dedicated=true --overwrite
 
 Creating namespace
 sudo kubectl create namespace prod
+
+ou ainda, para instalar um nó novo no cluster:
+curl -sfL https://get.k3s.io \
+ INSTALL_K3S_VERSION="v1.33.6+k3s1"
+ K3S_URL="https://192.168.1.150:6443" \
+ K3S_TOKEN="{TOKEN ADQIURIDO COM: sudo cat /var/lib/rancher/k3s/server/node-token}" \
+ sh -s - server
+
 -->

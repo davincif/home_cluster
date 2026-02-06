@@ -19,3 +19,6 @@ export PI02_eth="192.168.1.155"
 
 export PI03_wlan="192.168.1.145"
 export PI03_eth="192.168.1.153"
+
+export PI04_wlan="192.168.1.157"
+export PI04_eth="192.168.1.159"
