@@ -1,0 +1,17 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: gitea-postgres
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: gitea-postgres
+          resources:
+            requests:
+              cpu: 200m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 1Gi

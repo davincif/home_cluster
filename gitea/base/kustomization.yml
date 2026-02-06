@@ -3,7 +3,8 @@ kind: Kustomization
 
 resources:
   - configmap.yml
-  - deployment.yml
+  - gitea-postgres.yml
+  - gitea.yml
   # - ingress.yml
   - pvc.yml
   - secret.yml

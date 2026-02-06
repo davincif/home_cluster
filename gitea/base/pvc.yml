@@ -6,6 +6,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: gitea-hprod-expandable
   resources:
     requests:
       storage: 2Gi
@@ -19,6 +20,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
+  storageClassName: gitea-hprod-expandable
   resources:
     requests:
       storage: 8Gi
