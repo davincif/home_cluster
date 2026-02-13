@@ -2,31 +2,86 @@
 set -euo pipefail
 
 # Home Lab Cluster CLI (hlccli)
-# Usage:
-#   ./hlccli wave off
-#   ./hlccli wave on
-#   ./hlccli wave off -wf|--wifi [-bl|--bluetooth]
-#   ./hlccli wave on  -wf|--wifi [-bl|--bluetooth]
+#
+# Purpose:
+#   Small helper CLI for my home-lab Raspberry Pi cluster.
+#
+# Commands:
+#   wave <on|off> [--wifi] [--bluetooth]
+#     Enable/disable Wi-Fi/Bluetooth via rfkill (requires sudo).
+#
+#   uploadme
+#     Copy ../RaspbarryPi/ to each Pi at ~/Documents/RaspbarryPi via scp.
+#     NOTE: This currently uses a relative source path (../RaspbarryPi/).
+#
+#   logintopi <01|02|03|04> [ssh_args...] [--] [remote_command...]
+#     SSH into the selected Pi based on PI01_eth..PI04_eth environment variables.
+#
+#   spampiterminals
+#     Open 4 GNOME Terminal windows (fish) and SSH into PI01..PI04.
+#     Loads ../env-vars/barriers.env.bash (relative to this script) to get PIxx_eth vars.
+#
+# Environment variables:
+#   PI01_eth, PI02_eth, PI03_eth, PI04_eth
+#     Each should be a valid SSH target (IP/hostname or user@host).
+#
+# Requirements (depending on command):
+#   rfkill, sudo, ssh, scp, gnome-terminal, fish, realpath
 
 show_help() {
   cat <<'EOF'
 Home Lab Cluster CLI (hlccli)
 
 Usage:
-  ./hlccli wave <on|off> [flags]
+  ./hlccli <command> [args...]
 
 Commands:
-  wave on|off      Enable/disable wireless radios via rfkill.
+  wave <on|off> [flags]
+      Enable/disable wireless radios via rfkill (requires sudo).
 
-Flags (optional):
-  -wf, --wifi          Apply only to Wi-Fi
-  -bl, --bluetooth     Apply only to Bluetooth
+      Flags:
+        -wf, --wifi          Apply only to Wi-Fi
+        -bl, --bluetooth     Apply only to Bluetooth
 
-Behavior:
-  - With no flags, applies to both Wi-Fi and Bluetooth.
-  - With one or more flags, applies only to the selected radios.
+      Behavior:
+        - With no flags, applies to both Wi-Fi and Bluetooth.
+        - With one or more flags, applies only to the selected radios.
 
-Examples:
+  uploadme
+      Copy ../RaspbarryPi/ to all Pis:
+        davincif@${PI01_eth}:~/Documents/RaspbarryPi
+        davincif@${PI02_eth}:~/Documents/RaspbarryPi
+        davincif@${PI03_eth}:~/Documents/RaspbarryPi
+        davincif@${PI04_eth}:~/Documents/RaspbarryPi
+
+      Notes:
+        - Uses scp -r.
+        - Source path is relative (../RaspbarryPi/), so your current working directory matters.
+
+  logintopi <01|02|03|04> [ssh_args...] [--] [remote_command...]
+      SSH into a selected Pi. The target is chosen from:
+        PI01_eth, PI02_eth, PI03_eth, PI04_eth
+
+      Examples:
+        ./hlccli logintopi 01
+        ./hlccli logintopi 02 -v
+        ./hlccli logintopi 03 -- uname -a
+
+  spampiterminals
+      Opens 4 terminals (fish) and runs:
+        ./hlccli logintopi 01
+        ./hlccli logintopi 02
+        ./hlccli logintopi 03
+        ./hlccli logintopi 04
+
+      Notes:
+        - Requires gnome-terminal and fish.
+        - Loads env vars from ../env-vars/barriers.env.bash (relative to this script).
+
+Global:
+  -h, --help, help     Show this help.
+
+Wave examples:
   ./hlccli wave off
   ./hlccli wave on
   ./hlccli wave off --wifi
@@ -119,7 +174,72 @@ handle_wave() {
 }
 
 uploadme() {
-  scp -r ../RaspbarryPi/ davincif@$PI01_eth:~/Documents/RaspbarryPi && scp -r ../RaspbarryPi/ davincif@$PI02_eth:~/Documents/RaspbarryPi && scp -r ../RaspbarryPi/ davincif@$PI03_eth:~/Documents/RaspbarryPi
+  scp -r ../RaspbarryPi/ "davincif@${PI01_eth}:~/Documents/RaspbarryPi" \
+  && scp -r ../RaspbarryPi/ "davincif@${PI02_eth}:~/Documents/RaspbarryPi" \
+  && scp -r ../RaspbarryPi/ "davincif@${PI03_eth}:~/Documents/RaspbarryPi" \
+  && scp -r ../RaspbarryPi/ "davincif@${PI04_eth}:~/Documents/RaspbarryPi"
+}
+
+spampiterminals() {
+  local script_path script_dir env_bash
+
+  # hlccli absolute path (resolve symlinks)
+  script_path="$(realpath -- "${BASH_SOURCE[0]}")"
+  script_dir="$(dirname -- "$script_path")"
+
+  # env absolute path
+  env_bash="$(realpath -- "$script_dir/../env-vars/barriers.env.bash")"
+
+  if [[ ! -f "$env_bash" ]]; then
+    echo "[ERROR] Env file not found: $env_bash" >&2
+    return 1
+  fi
+
+  # If the env file contains VAR=... without "export", this ensures children inherit them.
+  set -a
+  # shellcheck source=/dev/null
+  source "$env_bash"
+  set +a
+
+  for id in 01 02 03 04; do
+    gnome-terminal -- fish -lc "
+      cd \"$script_dir\"
+      \"$script_path\" logintopi $id
+      exec fish
+    "
+  done
+}
+
+logintopi() {
+  local which="${1:-}"
+  local target=""
+
+  case "$which" in
+    01|1) target="${PI01_eth:-}" ;;
+    02|2) target="${PI02_eth:-}" ;;
+    03|3) target="${PI03_eth:-}" ;;
+    04|4) target="${PI04_eth:-}" ;;
+    -h|--help|help|"")
+      echo "Usage: $0 logintopi <01|02|03|04> [ssh_args...] [--] [remote_command...]" >&2
+      return 2
+      ;;
+    *)
+      echo "[ERROR] Unknown Pi id: $which (use 01..04)" >&2
+      return 2
+      ;;
+  esac
+
+  if [[ -z "$target" ]]; then
+    echo "[ERROR] Empty host. Make sure the corresponding env var is set (e.g., PI01_eth)." >&2
+    return 1
+  fi
+
+  # Optional:
+  #   ./hlccli logintopi 01 -v
+  #   ./hlccli logintopi 01 -- uname -a
+  shift || true
+
+  exec ssh "$target" "$@"
 }
 
 main() {
@@ -135,8 +255,14 @@ main() {
       handle_wave "$@"
       ;;
     uploadme)
-    uploadme "$@"
-    ;;
+      uploadme "$@"
+      ;;
+    spampiterminals)
+      spampiterminals "$@"
+      ;;
+    logintopi)
+      logintopi "$@"
+      ;;
     -h|--help|help)
       show_help
       ;;

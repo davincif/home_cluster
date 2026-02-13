@@ -20,7 +20,3 @@ network:
           auth:
             key-management: "psk"
             password: "S3kNV9724C9wDvtF"
-        "Redmi Note 13 Pro+ 5G":
-          auth:
-            key-management: "psk"
-            password: "mozami1029"
