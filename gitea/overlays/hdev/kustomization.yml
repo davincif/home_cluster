@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 namespace: hdev
@@ -12,3 +12,4 @@ patches:
   - path: patch-pvc.yml
   - path: patch-storageclass.yml
   - path: patch-gitea-postgres.yml
+  - path: patch-service.yml

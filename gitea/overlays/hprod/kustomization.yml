@@ -1,4 +1,4 @@
-apiVersion: v1
+apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 namespace: hprod
@@ -9,3 +9,4 @@ resources:
 patches:
   - path: patch-gitea.yml
   - path: patch-gitea-postgres.yml
+  - path: patch-service.yml

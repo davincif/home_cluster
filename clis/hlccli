@@ -175,9 +175,9 @@ handle_wave() {
 
 uploadme() {
   scp -r ../RaspbarryPi/ "davincif@${PI01_eth}:~/Documents/RaspbarryPi" \
-  && scp -r ../RaspbarryPi/ "davincif@${PI02_eth}:~/Documents/RaspbarryPi" \
-  && scp -r ../RaspbarryPi/ "davincif@${PI03_eth}:~/Documents/RaspbarryPi" \
-  && scp -r ../RaspbarryPi/ "davincif@${PI04_eth}:~/Documents/RaspbarryPi"
+  & scp -r ../RaspbarryPi/ "davincif@${PI02_eth}:~/Documents/RaspbarryPi" \
+  & scp -r ../RaspbarryPi/ "davincif@${PI03_eth}:~/Documents/RaspbarryPi" \
+  & scp -r ../RaspbarryPi/ "davincif@${PI04_eth}:~/Documents/RaspbarryPi"
 }
 
 spampiterminals() {
