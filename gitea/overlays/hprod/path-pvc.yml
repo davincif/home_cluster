@@ -5,10 +5,10 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: gitea-hdev-nonexpand
+  storageClassName: gitea-hprod-expandable
   resources:
     requests:
-      storage: 500Mi
+      storage: 2Gi
 
 ---
 apiVersion: v1
@@ -18,7 +18,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteOnce
-  storageClassName: gitea-hdev-nonexpand
+  storageClassName: gitea-hprod-expandable
   resources:
     requests:
-      storage: 1Gi
+      storage: 16Gi

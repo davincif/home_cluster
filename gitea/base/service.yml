@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: gitea
-  namespace: hprod
+  # namespace: hprod
 spec:
   selector:
     app: gitea
@@ -24,7 +24,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: gitea-postgres
-  namespace: hprod
+  # namespace: hprod
 spec:
   selector:
     app: gitea-postgres

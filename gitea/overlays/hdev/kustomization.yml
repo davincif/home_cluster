@@ -8,8 +8,10 @@ resources:
   # - storageclass.yml
 
 patches:
+  - path: patch-configmap.yml
   - path: patch-gitea.yml
   - path: patch-pvc.yml
   - path: patch-storageclass.yml
   - path: patch-gitea-postgres.yml
   - path: patch-service.yml
+  - path: patch-secret.yml

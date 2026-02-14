@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: gitea
-  namespace: hprod
+  # namespace: hprod
 spec:
   replicas: 2
   selector:
