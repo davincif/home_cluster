@@ -15,3 +15,18 @@ patches:
   - path: patch-gitea-postgres.yml
   - path: patch-service.yml
   - path: patch-secret.yml
+
+# patchesJson6902:
+#   - target:
+#       kind: StorageClass
+#       name: gitea-hprod-expandable
+#     patch: |-
+#       - op: replace
+#         path: /metadata/name
+#         value: gitea-hdev-nonexpand
+#       - op: replace
+#         path: /spec/allowVolumeExpansion
+#         value: false
+#       - op: replace
+#         path: /spec/reclaimPolicy
+#         value: Delete
