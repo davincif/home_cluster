@@ -4,19 +4,29 @@ network:
 
   ethernets:
     eth0:
+      optional: true
       dhcp4: true
       dhcp4-overrides:
         route-metric: 100
 
   wifis:
     wlan0:
-      optional: true
-      dhcp4: true
-      dhcp4-overrides:
-        route-metric: 600
-      # ghcp6: false
-      access-points:
-        "Vodafone-8DBAC2":
-          auth:
-            key-management: "psk"
-            password: "S3kNV9724C9wDvtF"
+    access-points:
+      "##############":
+        password: "###############"
+        mode: ap
+    dhcp4: no
+    addresses:
+      [192.168.1.1/24] # Set a static IP for the AP
+
+
+      # optional: true
+      # dhcp4: true
+      # dhcp4-overrides:
+      #   route-metric: 600
+      # # ghcp6: false
+      # access-points:
+      #   "Vodafone-8DBAC2":
+      #     auth:
+      #       key-management: "psk"
+      #       password: "S3kNV9724C9wDvtF"
