@@ -1,10 +1,48 @@
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitea-http
+spec:
+  selector:
+    app: gitea
+  ports:
+    - name: http
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gitea-ssh
+spec:
+  selector:
+    app: gitea
+  ports:
+    - name: ssh
+      protocol: TCP
+      port: 22
+      targetPort: 2222
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: gitea-data-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi # Ajuste para o ambiente de produção
+---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: gitea
-  # namespace: hprod
 spec:
-  replicas: 2
+  serviceName: "gitea"
+  replicas: 1
   selector:
     matchLabels:
       app: gitea
@@ -15,24 +53,44 @@ spec:
     spec:
       containers:
         - name: gitea
-          image: gitea/gitea:1.25
-          # ports:
-          #   - containerPort: 3000
-          #   - containerPort: 22
+          image: gitea/gitea:1.21
+          ports:
+            - containerPort: 3000
+              name: http
+            - containerPort: 2222
+              name: ssh
           volumeMounts:
-            - name: gitea-volume
+            - name: data
               mountPath: /data
-          envFrom:
-            - configMapRef:
-                name: gitea-config
-            - secretRef:
-                name: gitea-secret
+          env:
+            - name: USER_UID
+              value: "1000"
+            - name: USER_GID
+              value: "1000"
+            - name: GITEA__database__DB_TYPE
+              value: "postgres"
+            - name: GITEA__database__HOST
+              value: "gitea-postgres:5432"
+            - name: GITEA__database__NAME
+              value: "gitea"
+            - name: GITEA__database__USER
+              value: "gitea"
+            - name: GITEA__database__PASSWD
+              valueFrom:
+                secretKeyRef:
+                  name: gitea-postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: GITEA__server__DOMAIN
+              value: "gitea.example.com" # Mude para seu domínio
+            - name: GITEA__server__ROOT_URL
+              value: "https://gitea.example.com/" # Mude para seu domínio
+            - name: GITEA__service__DISABLE_REGISTRATION
+              value: "false"
       volumes:
-        - name: gitea-volume
+        - name: data
           persistentVolumeClaim:
-            claimName: gitea-pvc
+            claimName: gitea-data-pvc
       affinity:
-        # prefer the Raspberries fully server dedicated (with ubuntu-server)
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 5
@@ -41,7 +99,6 @@ spec:
                   - key: server-dedicated
                     operator: In
                     values: ["true"]
-        # prefer to be provisoned alongwise it's postgres pod
         podAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 10
@@ -51,15 +108,4 @@ spec:
                     - key: app
                       operator: In
                       values: ["gitea-postgres"]
-                topologyKey: "cluster-name"
-        # strongly prefer to have it's pod provisoned in diferent nodes
-        podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              podAffinityTerm:
-                labelSelector:
-                  matchExpressions:
-                    - key: app
-                      operator: In
-                      values: ["gitea"]
-                topologyKey: "cluster-name"
+                topologyKey: "kubernetes.io/hostname"

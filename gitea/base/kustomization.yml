@@ -2,57 +2,15 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - configmap.yml
   - gitea-postgres.yml
   - gitea.yml
-  # - ingress.yml
-  - pvc.yml
-  - secret.yml
-  - service.yml
-  - storageclass.yml
-bases:
-  - ../../base
+  - ingress.yml
 
-namespace: gitea-prod
-
-# Patches para o ambiente de produção
-patches:
-  # Mudar o host do Ingress
-  - patch: |-
-      - op: replace
-        path: /spec/rules/0/host
-        value: gitea.prod.example.com
-    target:
-      kind: Ingress
-      name: gitea-ingress
-
-  # Mudar o domínio e URL do Gitea
-  - patch: |-
-      - op: replace
-        path: /spec/template/spec/containers/0/env/7/value
-        value: gitea.prod.example.com
-      - op: replace
-        path: /spec/template/spec/containers/0/env/8/value
-        value: https://gitea.prod.example.com/
-    target:
-      kind: StatefulSet
-      name: gitea
-
-# Para produção, pode-se aumentar o tamanho dos PVCs se necessário.
-# O valor do 'base' (10Gi) será usado se não houver patch.
-# Exemplo para aumentar:
-# patches:
-#   - patch: |-
-#       - op: replace
-#         path: /spec/resources/requests/storage
-#         value: 50Gi
-#     target:
-#       kind: PersistentVolumeClaim
-#       name: gitea-postgres-pvc
-#   - patch: |-
-#       - op: replace
-#         path: /spec/resources/requests/storage
-#         value: 100Gi
-#     target:
-#       kind: PersistentVolumeClaim
-#       name: gitea-data-pvc
+secretGenerator:
+  - name: gitea-postgres-secret
+    type: Opaque
+    literals:
+      - POSTGRES_USER=gitea
+      - POSTGRES_DB=gitea
+      # MUDE ESTA SENHA ANTES DE APLICAR!
+      - POSTGRES_PASSWORD="CHANGE_ME_PLEASE"

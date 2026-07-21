@@ -1,5 +1,11 @@
 # DaVinciF's Home Lab Cluster (HLC)
 
+Scripts and configurations for our Home Server.
+
+## License
+
+[AGPL-3.0-or-later](LICENSE)
+
 This repo collects all the scrips used to maintain the _@davincif_ HLC.
 
 <!--
