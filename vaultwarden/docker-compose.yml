@@ -6,11 +6,13 @@ services:
     container_name: vaultwarden
     restart: unless-stopped
     environment:
-      - DOMAIN=https://vault.ldavincif.com
+      - DOMAIN=https://vaultwarden.ldavincif.com
       - SIGNUPS_ALLOWED=true # Change to false after creating your first account
       - WEB_VAULT_ENABLED=true
       # ↓ unecessary when using cloudflare tunnel ↓
       # - ROCKET_TLS={certs="/ssl/certs/certs.pem",key="/ssl/private/key.pem"} # Environment variable is specific to the Rocket web server
+      # - WEBSOCKET_ENABLED=true
+      - ADMIN_TOKEN=${ADMIN_TOKEN} # docker run --rm -it vaultwarden/server /vaultwarden hash
     volumes:
       - ./vw-data:/data
     ports:
