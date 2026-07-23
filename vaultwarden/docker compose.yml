@@ -1,0 +1,17 @@
+# This service will use SQLite3. It's good enough until 15~20 users.
+
+services:
+  vaultwarden:
+    image: vaultwarden/server:latest
+    container_name: vaultwarden
+    restart: unless-stopped
+    environment:
+      - DOMAIN=https://vault.ldavincif.com
+      - SIGNUPS_ALLOWED=true # Change to false after creating your first account
+      - WEB_VAULT_ENABLED=true
+      # ↓ unecessary when using cloudflare tunnel ↓
+      # - ROCKET_TLS={certs="/ssl/certs/certs.pem",key="/ssl/private/key.pem"} # Environment variable is specific to the Rocket web server
+    volumes:
+      - ./vw-data:/data
+    ports:
+      - :8090:80 # Binds to local port 8080; maps to internal port 80
