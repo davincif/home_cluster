@@ -2,6 +2,12 @@
 
 Scripts and configurations for our Home Server.
 
+## SCP exemple
+
+```sh
+scp -o ProxyCommand="cloudflared access ssh --hostname %h" -r ~/Documents/Projects/RaspberryPi/raspberry.zip davincif@pi02-ssh.ldavincif.com:~/Documents
+```
+
 ## License
 
 [AGPL-3.0-or-later](LICENSE)

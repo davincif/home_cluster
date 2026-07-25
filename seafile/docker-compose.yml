@@ -1,15 +1,13 @@
-version: "3.8"
-
 services:
   db:
     image: mariadb:10.11
     container_name: seafile-mysql
     environment:
-      - MYSQL_ROOT_PASSWORD=${SEAFILE_DB_ROOT_PASSWD}
+      - MYSQL_ROOT_PASSWORD=${SEAFILE_DB_ROOT_PASSWD:?A variável SEAFILE_DB_ROOT_PASSWD não está definida}
       - MYSQL_LOG_CONSOLE=true
       - MARIADB_AUTO_UPGRADE=1
     volumes:
-      - /media/usb1/seafile-mysql:/var/lib/mysql
+      - ${SEAFILE_MYSQL_VOLUME:-/media/usb1/seafile-mysql}:/var/lib/mysql
     networks:
       - seafile-net
     restart: unless-stopped
@@ -23,20 +21,46 @@ services:
     restart: unless-stopped
 
   seafile:
-    image: seafileltd/seafile-ce:latest
+    image: seafileltd/seafile-mc:13.0-latest
     container_name: seafile
     ports:
       - "8063:80"
     volumes:
-      - /media/usb1/seafile-data:/shared
+      - ${SEAFILE_VOLUME:-/media/usb1/seafile-data}:/shared
     environment:
-      - DB_HOST=db
-      - DB_ROOT_PASSWD=${SEAFILE_DB_ROOT_PASSWD}
+      # --- Conexão com o banco (nomes NOVOS da versão 13.0) ---
+      - SEAFILE_MYSQL_DB_HOST=db
+      # - SEAFILE_MYSQL_DB_PORT=3306
+      - SEAFILE_MYSQL_DB_USER=seafile
+      - SEAFILE_MYSQL_DB_PASSWORD=${SEAFILE_DB_PASSWD:?A variável SEAFILE_DB_PASSWD não está definida}
+      - INIT_SEAFILE_MYSQL_ROOT_PASSWORD=${SEAFILE_DB_ROOT_PASSWD:?A variável SEAFILE_DB_ROOT_PASSWD não está definida}
+      - SEAFILE_MYSQL_DB_CCNET_DB_NAME=ccnet_db
+      - SEAFILE_MYSQL_DB_SEAFILE_DB_NAME=seafile_db
+      - SEAFILE_MYSQL_DB_SEAHUB_DB_NAME=seahub_db
+
+      # --- Chave obrigatória a partir da 13.0 ---
+      - JWT_PRIVATE_KEY=${SEAFILE_JWT_PRIVATE_KEY:?A variável SEAFILE_JWT_PRIVATE_KEY não está definida}
+
+      # --- Cache (você quer manter memcached, não redis) ---
+      - CACHE_PROVIDER=memcached
+      - MEMCACHED_HOST=memcached
+      # - MEMCACHED_PORT=11211
+
+      # --- Servidor / admin ---
       - TIME_ZONE=Europe/Lisbon
-      - SEAFILE_ADMIN_EMAIL=LDaVinciF.pt@gmail.com
-      - SEAFILE_ADMIN_PASSWORD=${SEAFILE_ADMIN_PASSWORD}
-      - SEAFILE_SERVER_LETSENCRYPT=false
+      - INIT_SEAFILE_ADMIN_EMAIL=LDaVinciF.pt@gmail.com
+      - INIT_SEAFILE_ADMIN_PASSWORD=${SEAFILE_ADMIN_PASSWORD:?A variável SEAFILE_ADMIN_PASSWORD não está definida}
       - SEAFILE_SERVER_HOSTNAME=seafile.ldavincif.com
+      - SEAFILE_SERVER_PROTOCOL=https
+
+      # [history] -> keep_days = 30
+      - SEAFILE_CONF_history__keep_days=30
+
+      # [quota] -> default_quota = 2
+      - SEAFILE_CONF_quota__default_quota=10
+
+      # [fileserver] -> max_upload_size = 1024
+      - SEAFILE_CONF_fileserver__max_upload_size=1024
     networks:
       - seafile-net
     depends_on:
