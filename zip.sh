@@ -16,7 +16,7 @@ zip -r "$ARCHIVE_NAME" . \
     -x "trash/*" \
     -x "*.zip" \
     -x "zip.sh" \
-    -x ".virenv/*" \
+    -x "./*/.virenv/*" \
     -x "*/__pycache__/*" \
     -x "*.pyc*"
 
