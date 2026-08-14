@@ -6,10 +6,10 @@ services:
     environment:
       # - CONFIG_FILE=/config.yaml
       - GITEA_INSTANCE_URL=https://gitea.ldavincif.com/
-      - GITEA_RUNNER_REGISTRATION_TOKEN="${REGISTRATION_TOKEN}"
+      - GITEA_RUNNER_REGISTRATION_TOKEN=${GITEA_REGISTRATION_TOKEN}
       - GITEA_RUNNER_NAME=gitea_runner
       # - GITEA_RUNNER_LABELS="${RUNNER_LABELS}" # maybe use: ubuntu-22.04:docker
     volumes:
-      - ./config.yaml:/config.yaml
-      - ./gitea-runner:/data
+      # - ./config.yaml:/config.yaml
+      - /opt/gitea-runner:/data
       - /var/run/docker.sock:/var/run/docker.sock

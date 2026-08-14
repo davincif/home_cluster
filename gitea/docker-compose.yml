@@ -7,7 +7,7 @@ networks:
 
 services:
   server:
-    image: docker.gitea.com/gitea:1.27.0
+    image: docker.gitea.com/gitea:1.27.2
     container_name: gitea
     environment:
       - USER_UID=1000
@@ -19,7 +19,7 @@ services:
     networks:
       - gitea
     volumes:
-      - ./gitea:/data
+      - /opt/gitea:/data
       - /etc/timezone:/etc/timezone:ro
       - /etc/localtime:/etc/localtime:ro
     ports:
