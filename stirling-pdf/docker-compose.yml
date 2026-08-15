@@ -1,0 +1,25 @@
+services:
+  stirling-pdf:
+    image: stirlingtools/stirling-pdf:latest
+    container_name: stirling-pdf
+    restart: unless-stopped
+    ports:
+      - "8095:8080"
+    volumes:
+      - /opt/stirling-data/tessdata:/usr/share/tessdata # language files for OCR
+      - /opt/stirling-data/configs:/configs # settings + DB (SQLite) + keys
+      - /opt/stirling-data/logs:/logs # application logs
+      - /opt/stirling-data/pipeline:/pipeline # automations
+      - /opt/stirling-data/customFiles:/customFiles # branding/custom (opcional)
+    environment:
+      # Authentication
+      - SECURITY_ENABLELOGIN=true # enable login (only applied on first startup)
+      - SECURITY_INITIALLOGIN_USERNAME=${STIRLING_ADMIN_USER}
+      - SECURITY_INITIALLOGIN_PASSWORD=${STIRLING_ADMIN_PASSWORD}
+
+      # UI / locale
+      - SYSTEM_DEFAULTLOCALE=en-US
+      - UI_APPNAME=ldavincif Stirling PDF
+
+      # Limits
+      - SYSTEM_MAXFILESIZE=250 # max upload size, in MB
