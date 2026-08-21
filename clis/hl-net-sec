@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
-# homelab-network-security
+# hl-net-sec => homelab-network-security
 
 show_help() {
-  echo "ECHO NOT IMPLEMENTED, SORRY!"
   echo "
 Home Lab Cluster CLI (hlccli)
 Usage:
@@ -27,8 +26,6 @@ install_network_security_tools() {
 
   sudo apt update
   sudo apt install ufw -y
-
-  # fail2ban
 }
 
 protect() {
@@ -38,14 +35,35 @@ protect() {
 }
 
 allow_pi01() {
+  echo "allowing in pi01..."
+
+  echo "ssh service..."
   sudo ufw allow 22/tcp
 }
 
 allow_pi02() {
+  echo "allowing in pi02..."
+
+  echo "docker-proxy -> vaultwarden"
+  sudo ufw allow 8090/tcp
+
+  echo "ssh service..."
   sudo ufw allow 22/tcp
 }
 
 allow_pi03() {
+  echo "allowing in pi03..."
+
+  echo "docker-proxy -> gitea ssh"
+  sudo ufw allow 222/tcp
+
+  echo "docker-proxy -> gitea"
+  sudo ufw allow 3000/tcp
+
+  echo "docker-proxy -> seafile"
+  sudo ufw allow 8063/tcp
+
+  echo "ssh service..."
   sudo ufw allow 22/tcp
 }
 
@@ -78,18 +96,6 @@ confirmation() {
   sudo systemctl status cloudflared
 }
 
-fail2ban(){
-  # IN DEV! DONT USE!
-  echo "fail2ban FUNCTION IN DEV, DON'T USE IT!"
-  return
-  sudo apt-get install fail2ban
-  sudo systemctl enable fail2ban.service
-  # set up File: /etc/fail2ban/jail.local
-  # sudo systemctl restart fail2ban.service
-}
-
-
-
 setup_pi_homelab() {
   if [[ $# -lt 1 ]]; then
     echo "[ERROR] Missing pi flag, where is the net-set being installed? (01..04)." >&2
@@ -101,23 +107,49 @@ setup_pi_homelab() {
   protect
 
   local pi="$1"; shift
-  case pi in
-    pi01|pi1)
-      allow_pi01
+  case "$pi" in
+    --pi01|--pi1|-pi01|-pi1)
+      allow_pi01 "$@"
       ;;
-    pi02|pi2)
-      allow_pi02
+    --pi02|--pi2|-pi02|-pi2)
+      allow_pi02 "$@"
       ;;
-    pi03|pi3)
-      allow_pi03
+    --pi03|--pi3|-pi03|-pi3)
+      allow_pi03 "$@"
       ;;
-    pi04|pi4)
-      allow_pi04
+    --pi04|--pi4|-pi04|-pi4)
+      allow_pi04 "$@"
+      ;;
+    *)
+      echo "[ERROR] Unknown flag: $1" >&2
+      show_help
+      exit 1
       ;;
   esac
 
   activate
 }
+
+check_status() {
+  # general status
+  sudo fail2ban-client status
+
+  # SSH specific status
+  sudo fail2ban-client status sshd
+
+  # check logs do fail2ban
+  # sudo tail -f /var/log/fail2ban.log
+}
+
+# fail2ban() {
+#   # IN DEV! DONT USE!
+#   echo "fail2ban FUNCTION IN DEV, DON'T USE IT!"
+#   return
+#   sudo apt-get install fail2ban -y
+#   sudo systemctl enable fail2ban.service
+#   # set up File: /etc/fail2ban/jail.local
+#   # sudo systemctl restart fail2ban.service
+# }
 
 main() {
   if [[ $# -lt 1 ]]; then
@@ -125,11 +157,14 @@ main() {
     exit 1
   fi
 
-    local cmd="$1"; shift
+  local cmd="$1"; shift
 
   case "$cmd" in
-    -i|--install)
-      setup_pi_homelab
+    i|install)
+      setup_pi_homelab "$@"
+      ;;
+    status)
+      check_status "$@"
       ;;
     -h|--help|help)
       show_help
