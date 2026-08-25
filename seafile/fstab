@@ -1,0 +1,5 @@
+# at /etc/fstab, create a backup for safety, and add the line bellow:
+
+# check the correct ID with: lsblk -f
+
+UUID=DEVICE_UUID /media/usb1 ext4 defaults 0 0
