@@ -7,12 +7,23 @@ services:
     restart: unless-stopped
     environment:
       - DOMAIN=https://vaultwarden.ldavincif.com
-      - SIGNUPS_ALLOWED=true # Change to false after creating your first account
-      - WEB_VAULT_ENABLED=true
+      - SIGNUPS_ALLOWED=${SIGNUPS_ALLOWED} # Change to false after creating your first account
+      - WEB_VAULT_ENABLED=${WEB_VAULT_ENABLED}
+      - ADMIN_TOKEN=${ADMIN_TOKEN} # docker run --rm -it vaultwarden/server /vaultwarden hash
+
       # ↓ unecessary when using cloudflare tunnel ↓
       # - ROCKET_TLS={certs="/ssl/certs/certs.pem",key="/ssl/private/key.pem"} # Environment variable is specific to the Rocket web server
       # - WEBSOCKET_ENABLED=true
-      - ADMIN_TOKEN=${ADMIN_TOKEN} # docker run --rm -it vaultwarden/server /vaultwarden hash
+
+      # SMTP Configuration (AWS SES)
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_FROM=${SMTP_FROM}
+      - SMTP_FROM_NAME=vaultwarden
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_SECURITY=${SMTP_SECURITY}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_AUTH_MECHANISM=Login
     volumes:
       - /opt/vw-data:/data
     ports:

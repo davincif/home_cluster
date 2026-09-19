@@ -9,6 +9,7 @@
 #   sshkeys load yubikey --ssh       -> load only ~/.ssh/yubikey/homelab_ssh
 #   sshkeys load yubikey --service   -> load only ~/.ssh/yubikey/homelab_services
 #   sshkeys clear                    -> remove all keys from the ssh-agent (ssh-add -D)
+#   sshkeys show                     -> show all currently loaded keys
 #   sshkeys help | -h | --help       -> show this help
 #
 # Source it from your .bashrc:
@@ -27,17 +28,20 @@ USAGE
   sshkeys load yubikey --ssh        Load only ~/.ssh/yubikey/homelab_ssh
   sshkeys load yubikey --service    Load only ~/.ssh/yubikey/homelab_services
   sshkeys clear                     Remove all keys currently loaded in the ssh-agent
+  sshkeys show                      Show all currently loaded keys
   sshkeys help | -h | --help        Show this message
 
 EXAMPLES
   sshkeys load all
   sshkeys load yubikey --service
   sshkeys clear
+  sshkeys show
 
 NOTES
   - The --ssh and --service flags are mutually exclusive and only apply to 'yubikey'.
   - Only files that look like private keys (PEM/OPENSSH header) are considered;
     .pub files and other unrelated files are skipped.
+  - Hidden directories (starting with '.') are ignored during load.
 EOF
 }
 
@@ -66,7 +70,7 @@ _sshkeys_add_key() {
 }
 
 # Recursively walks a directory and loads every private key found in it.
-# Prints a summary at the end.
+# Ignores hidden directories. Prints a summary at the end.
 _sshkeys_load_dir() {
     local dir="$1"
     local loaded=0
@@ -76,11 +80,13 @@ _sshkeys_load_dir() {
         return 1
     fi
 
+    # -type d -name ".*" -prune : skips any hidden directory
+    # -o -type f -print0 : otherwise, if it's a file, pass it to read
     while IFS= read -r -d '' file; do
         if _sshkeys_is_private_key "$file"; then
             _sshkeys_add_key "$file" && loaded=$((loaded + 1))
         fi
-    done < <(find "$dir" -type f -print0)
+    done < <(find "$dir" -type d -name ".*" -prune -o -type f -print0)
 
     echo "Loaded $loaded key(s) from $dir"
 }
@@ -162,13 +168,16 @@ _sshkeys_cmd_clear() {
 }
 
 # sshkeys show
-_sshkeys_cmd_clear() {
-    if ssh-add -L >/dev/null 2>&1; then
-        echo "All keys:"
-    else
-        echo "Failed to show keys from the ssh-agent (is the agent running?)" >&2
+_sshkeys_cmd_show() {
+    # Check if agent has keys (or if it's running)
+    if ! ssh-add -l >/dev/null 2>&1; then
+        echo "No keys loaded or ssh-agent is not running." >&2
         return 1
     fi
+
+    echo "Currently loaded keys:"
+    # Use -l to list fingerprints, or -L to list full public keys
+    ssh-add -l
 }
 
 # ---------------------------------------------------------------------------
