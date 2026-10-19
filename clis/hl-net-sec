@@ -76,8 +76,8 @@ allow_pi04() {
   echo "docker-proxy -> bentopdf"
   sudo ufw allow 3030/tcp
 
-  echo "docker-proxy -> stirling-pdf"
-  sudo ufw allow 8095/tcp
+  # echo "docker-proxy -> stirling-pdf"
+  # sudo ufw allow 8095/tcp
 
   echo "docker-proxy -> ldavincif-portal"
   sudo ufw allow 8080/tcp
