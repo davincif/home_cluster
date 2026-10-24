@@ -1,0 +1,15 @@
+services:
+  swagger-editor:
+    image: swaggerapi/swagger-editor
+    container_name: "swagger-editor-container"
+    ports:
+      - "8787:80"
+  # swagger-ui:
+  #   image: swaggerapi/swagger-ui
+  #   container_name: "swagger-ui-container"
+  #   ports:
+  #     - "8484:8080"
+  #   volumes:
+  #     - ./swagger/swagger.yml:/swagger.yml
+  #   environment:
+  #     SWAGGER_JSON: /swagger.yml

@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>PlantUML Client-Side</title>
+    <!-- Lightweight library to encode PlantUML text -->
+    <script src="https://cdn.jsdelivr.net/npm/plantuml-encoder@1.4.0/lib/plantuml-encoder.min.js"></script>
+    <style>
+      body {
+        font-family: sans-serif;
+        display: flex;
+        gap: 20px;
+        padding: 20px;
+      }
+      textarea {
+        width: 400px;
+        height: 300px;
+        font-family: monospace;
+      }
+      img {
+        max-width: 100%;
+        border: 1px solid #ccc;
+        padding: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div>
+      <h3>Editor</h3>
+      <textarea id="umlInput" onkeyup="renderUml()">
+@startuml
+A -> B: Hello
+B --> A: World
+@enduml
+        </textarea
+      >
+    </div>
+    <div>
+      <h3>Preview</h3>
+      <img id="umlOutput" src="" alt="UML Diagram will appear here" />
+    </div>
+
+    <script>
+      function renderUml() {
+        const text = document.getElementById("umlInput").value;
+        // Encodes text in the browser
+        const encoded = plantumlEncoder.encode(text);
+        // Fetches image from public server, costing zero CPU on your Pi
+        const url = "https://www.plantuml.com/plantuml/svg/" + encoded;
+        document.getElementById("umlOutput").src = url;
+      }
+
+      // Initial render
+      renderUml();
+    </script>
+  </body>
+</html>
