@@ -37,6 +37,13 @@ services:
       - SEAFILE_MYSQL_DB_CCNET_DB_NAME=ccnet_db
       - SEAFILE_MYSQL_DB_SEAFILE_DB_NAME=seafile_db
       - SEAFILE_MYSQL_DB_SEAHUB_DB_NAME=seahub_db
+      - EMAIL_USE_TLS=${EMAIL_USE_TLS}
+      - EMAIL_HOST=${EMAIL_HOST}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - EMAIL_PORT=${EMAIL_PORT}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+      - SERVER_EMAIL=${SERVER_EMAIL}
 
       # --- Chave obrigatória a partir da 13.0 ---
       - JWT_PRIVATE_KEY=${SEAFILE_JWT_PRIVATE_KEY:?A variável SEAFILE_JWT_PRIVATE_KEY não está definida}

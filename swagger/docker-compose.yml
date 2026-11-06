@@ -4,6 +4,7 @@ services:
     container_name: "swagger-editor-container"
     ports:
       - "8787:80"
+    restart: unless-stopped
   # swagger-ui:
   #   image: swaggerapi/swagger-ui
   #   container_name: "swagger-ui-container"
