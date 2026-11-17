@@ -39,11 +39,24 @@
         cursor: pointer;
         font-weight: 600;
         background: #89b4fa;
-        color: #11111b;
+        color: #6868a1;
       }
       button:disabled {
         opacity: 0.5;
         cursor: not-allowed;
+      }
+      #btn-theme {
+        background: #313244;
+        color: #cdd6f4;
+        padding: 0.4rem 0.65rem;
+        font-size: 1rem;
+        line-height: 1;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #btn-theme:hover {
+        background: #45475a;
       }
       #status {
         font-size: 0.85rem;
@@ -68,17 +81,46 @@
         resize: none;
         outline: none;
       }
-      #preview-container {
+      #preview-wrapper {
         width: 55%;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+        background: #ffffff;
+        transition: background-color 0.15s ease;
+      }
+      #preview-wrapper.theme-dark {
+        background: #6868a1;
+      }
+      #preview-container {
+        width: 100%;
         height: 100%;
         overflow: auto;
         display: flex;
-        justify-content: center;
-        align-items: center;
-        background: #ffffff;
-        padding: 1rem;
+        padding: 1.5rem;
+        cursor: grab;
+      }
+      #preview-container.dragging {
+        cursor: grabbing;
+        user-select: none;
+      }
+      #diagram {
+        margin: auto;
+        flex-shrink: 0;
+        display: inline-block;
+      }
+      #diagram svg {
+        display: block;
+        max-width: none !important;
+        max-height: none !important;
+        background: #ffffff !important;
+        transition: background-color 0.15s ease;
+      }
+      #preview-wrapper.theme-dark #diagram svg {
+        background: #6868a1 !important;
       }
       #error-box {
+        margin: auto;
         color: #f38ba8;
         background: #181825;
         padding: 1rem;
@@ -87,6 +129,39 @@
         white-space: pre-wrap;
         font-family: monospace;
       }
+      .zoom-controls {
+        position: absolute;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        background: rgba(24, 24, 37, 0.92);
+        padding: 0.4rem 0.5rem;
+        border-radius: 8px;
+        border: 1px solid #313244;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(4px);
+      }
+      .zoom-controls button {
+        background: #313244;
+        color: #cdd6f4;
+        padding: 0.35rem 0.65rem;
+        font-size: 0.9rem;
+        border-radius: 5px;
+      }
+      .zoom-controls button:hover:not(:disabled) {
+        background: #45475a;
+      }
+      #zoom-level {
+        font-size: 0.85rem;
+        font-weight: 600;
+        min-width: 3.4rem;
+        text-align: center;
+        color: #cdd6f4;
+        user-select: none;
+      }
     </style>
   </head>
   <body>
@@ -94,6 +169,13 @@
       <strong>PlantUML Client Renderer</strong>
       <div class="actions">
         <span id="status">Loading local engine...</span>
+        <button
+          id="btn-theme"
+          type="button"
+          title="Toggle Image Background Theme"
+        >
+          🌙
+        </button>
         <button id="btn-svg" disabled>Download SVG</button>
         <button id="btn-png" disabled>Download PNG</button>
       </div>
@@ -110,11 +192,23 @@ User -> Client : Types PlantUML code
 Client -> Client : Renders SVG & PNG locally (0% Pi CPU)
 @enduml</textarea
       >
-      <div id="preview-container">
-        <div id="diagram"></div>
-        <div id="error-box"></div>
+      <div id="preview-wrapper">
+        <div id="preview-container">
+          <div id="diagram"></div>
+          <div id="error-box"></div>
+        </div>
+        <div class="zoom-controls">
+          <button id="btn-zoom-out" type="button" title="Zoom Out (-)">
+            −
+          </button>
+          <span id="zoom-level" title="Current Zoom Level">100%</span>
+          <button id="btn-zoom-in" type="button" title="Zoom In (+)">+</button>
+          <button id="btn-zoom-reset" type="button" title="Reset Zoom (100%)">
+            Reset
+          </button>
+        </div>
       </div>
     </main>
-    <script type="module" src="/app.js"></script>
+    <script type="module" src="/app.js?v=3"></script>
   </body>
 </html>
