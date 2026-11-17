@@ -1,19 +1,12 @@
-# TODO: FINISH THIS
-# ATTENTION: STILL NOT READY TO USE!
-
 services:
-  plantuml-client:
-    image: nginx:alpine
-    container_name: plantuml-client
+  plantuml-web:
+    build: .
+    container_name: plantuml-web
     restart: unless-stopped
-    volumes:
-      - ./html:/usr/share/nginx/html:ro
     ports:
-      - "8181:80" # Adjust port or use Cloudflare Tunnel directly
-    # networks:
-    #   - your_cloudflare_network
-
-# networks:
-#   your_cloudflare_network:
-#     external: true
-
+      - "8085:80"
+    deploy:
+      resources:
+        limits:
+          memory: 32M
+          cpus: "0.20"

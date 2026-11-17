@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PlantUML Client-Side Studio</title>
+    <script src="/vendor/plantuml/viz-global.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: system-ui, sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        background: #1e1e2e;
+        color: #cdd6f4;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 1.25rem;
+        background: #181825;
+        border-bottom: 1px solid #313244;
+      }
+      .actions {
+        display: flex;
+        gap: 0.5rem;
+        align-items: center;
+      }
+      button {
+        padding: 0.45rem 0.9rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 600;
+        background: #89b4fa;
+        color: #11111b;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      #status {
+        font-size: 0.85rem;
+        color: #a6adc8;
+        margin-right: 1rem;
+      }
+      main {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+      textarea {
+        width: 45%;
+        height: 100%;
+        background: #11111b;
+        color: #cdd6f4;
+        border: none;
+        border-right: 1px solid #313244;
+        padding: 1rem;
+        font-family: monospace;
+        font-size: 0.95rem;
+        resize: none;
+        outline: none;
+      }
+      #preview-container {
+        width: 55%;
+        height: 100%;
+        overflow: auto;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #ffffff;
+        padding: 1rem;
+      }
+      #error-box {
+        color: #f38ba8;
+        background: #181825;
+        padding: 1rem;
+        border-radius: 6px;
+        display: none;
+        white-space: pre-wrap;
+        font-family: monospace;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <strong>PlantUML Client Renderer</strong>
+      <div class="actions">
+        <span id="status">Loading local engine...</span>
+        <button id="btn-svg" disabled>Download SVG</button>
+        <button id="btn-png" disabled>Download PNG</button>
+      </div>
+    </header>
+    <main>
+      <textarea id="editor" spellcheck="false">
+@startuml
+actor User
+participant "Browser (WASM/JS)" as Client
+participant "pi04 (Nginx)" as Server
+
+Server -> Client : Serves static @plantuml/core
+User -> Client : Types PlantUML code
+Client -> Client : Renders SVG & PNG locally (0% Pi CPU)
+@enduml</textarea
+      >
+      <div id="preview-container">
+        <div id="diagram"></div>
+        <div id="error-box"></div>
+      </div>
+    </main>
+    <script type="module" src="/app.js"></script>
+  </body>
+</html>
