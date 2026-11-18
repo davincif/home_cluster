@@ -1,6 +1,6 @@
 context:
 
-- my home server as:
+- my home server has:
   - webserver - my website at ldavincif.com
   - webserver - https://bentopdf.ldavincif.com/
   - gitea using sqlite3 at https://gitea.ldavincif.com
@@ -8,6 +8,7 @@ context:
   - vaultwarden also using sqlite3 at https://vaultwarden.ldavincif.com/
   - seafile at https://seafile.ldavincif.com/
   - https://stirling-pdf.ldavincif.com/login (with login)
+  - plantuml client-side renderer (WASM/JS) at https://plantuml.ldavincif.com/
   - ssh port open for each pi in a subdomain for each one.
 
 all being server over cloudflare tunnel, with a domain being ldavincif.com.

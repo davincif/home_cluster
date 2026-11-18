@@ -70,14 +70,17 @@ allow_pi03() {
 allow_pi04() {
   echo "allowing in pi04..."
 
-  echo "docker-proxy -> restaurant-manager"
-  sudo ufw allow 8273/tcp
-
   echo "docker-proxy -> bentopdf"
   sudo ufw allow 3030/tcp
 
+  echo "docker-proxy -> swagger-editor"
+  sudo ufw allow 8787/tcp
+
   # echo "docker-proxy -> stirling-pdf"
   # sudo ufw allow 8095/tcp
+
+  echo "docker-proxy -> plantuml"
+  sudo ufw allow 8085/tcp
 
   echo "docker-proxy -> ldavincif-portal"
   sudo ufw allow 8080/tcp

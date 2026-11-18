@@ -12,6 +12,39 @@ const DARK_BG = "#11111b";
 const ZOOM_MIN = 0.25;
 const ZOOM_MAX = 4.0;
 const ZOOM_STEP = 0.2;
+const MAX_PNG_DIMENSION = 16384;
+
+const FORBIDDEN_SVG_TAGS = new Set([
+  "script",
+  "foreignobject",
+  "iframe",
+  "object",
+  "embed",
+  "applet",
+  "base",
+  "meta",
+  "link",
+  "html",
+  "head",
+  "body",
+  "audio",
+  "video",
+  "canvas",
+  "animate",
+  "set",
+  "animatemotion",
+  "animatetransform",
+]);
+
+const URL_ATTRIBUTES = new Set([
+  "href",
+  "xlink:href",
+  "src",
+  "action",
+  "formaction",
+  "poster",
+  "data",
+]);
 
 const editor = document.getElementById("editor");
 const previewWrapper = document.getElementById("preview-wrapper");
@@ -64,10 +97,101 @@ function getThemeBackgroundColor() {
   return currentTheme === "dark" ? DARK_BG : LIGHT_BG;
 }
 
+function isSafeCssText(cssText) {
+  const normalized = cssText.replace(/\/\*[\s\S]*?\*\//g, "").trim();
+  if (/javascript\s*:|vbscript\s*:|expression\s*\(|@import/i.test(normalized)) {
+    return false;
+  }
+  const urlMatches = normalized.matchAll(/url\s*\(\s*(['"]?)(.*?)\1\s*\)/gi);
+  for (const match of urlMatches) {
+    const target = (match[2] || "").trim();
+    if (!target.startsWith("#")) {
+      return false;
+    }
+  }
+  return true;
+}
+
+function isSafeUrlForTag(tagName, rawValue) {
+  const cleaned = rawValue.replace(/[\u0000-\u0020\u007f]/g, "");
+  if (cleaned.startsWith("#")) {
+    return true;
+  }
+  if (tagName === "a") {
+    return /^(https?:|mailto:)/i.test(cleaned);
+  }
+  if (tagName === "image") {
+    return /^data:image\/(png|jpeg|jpg|gif|webp);base64,[a-z0-9+/=]+$/i.test(
+      cleaned,
+    );
+  }
+  return false;
+}
+
+/**
+ * Sanitizes a PlantUML-generated SVG string by parsing it as XML and
+ * stripping executable elements, event handlers, and unsafe URLs/CSS.
+ */
+function sanitizeSvg(rawSvg) {
+  if (typeof rawSvg !== "string" || !rawSvg.trim()) {
+    return null;
+  }
+
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(rawSvg, "image/svg+xml");
+  const parserError = doc.querySelector("parsererror");
+  const root = doc.documentElement;
+
+  if (parserError || !root || root.tagName.toLowerCase() !== "svg") {
+    return null;
+  }
+
+  const elements = [root, ...root.querySelectorAll("*")];
+  for (const el of elements) {
+    const tag = el.tagName.toLowerCase();
+    if (FORBIDDEN_SVG_TAGS.has(tag)) {
+      el.remove();
+      continue;
+    }
+
+    if (tag === "style" && !isSafeCssText(el.textContent || "")) {
+      el.remove();
+      continue;
+    }
+
+    for (const attr of [...el.attributes]) {
+      const attrName = attr.name.toLowerCase();
+      const localName = attrName.includes(":")
+        ? attrName.split(":").pop()
+        : attrName;
+
+      if (attrName.startsWith("on") || localName.startsWith("on")) {
+        el.removeAttribute(attr.name);
+        continue;
+      }
+
+      if (attrName === "style" && !isSafeCssText(attr.value)) {
+        el.removeAttribute(attr.name);
+        continue;
+      }
+
+      if (URL_ATTRIBUTES.has(attrName) || URL_ATTRIBUTES.has(localName)) {
+        if (!isSafeUrlForTag(tag, attr.value)) {
+          el.removeAttribute(attr.name);
+        }
+      }
+    }
+  }
+
+  return root;
+}
+
 function getThemedSvgString() {
   if (!currentSvg) return "";
-  const bg = getThemeBackgroundColor();
-  return currentSvg.replace(/background\s*:\s*#[0-9a-fA-F]{3,6}/i, `background:${bg}`);
+  const sanitizedRoot = sanitizeSvg(currentSvg);
+  if (!sanitizedRoot) return "";
+  sanitizedRoot.style.background = getThemeBackgroundColor();
+  return new XMLSerializer().serializeToString(sanitizedRoot);
 }
 
 function applyTheme() {
@@ -190,10 +314,21 @@ function triggerRender() {
   renderEngine(
     lines,
     (svg) => {
-      currentSvg = svg;
+      const sanitizedRoot = sanitizeSvg(svg);
+      if (!sanitizedRoot) {
+        diagramEl.style.display = "none";
+        errorBox.style.display = "block";
+        errorBox.textContent = "Invalid or unsafe SVG output rejected.";
+        btnSvg.disabled = true;
+        btnPng.disabled = true;
+        statusEl.textContent = "Render blocked";
+        return;
+      }
+
+      currentSvg = new XMLSerializer().serializeToString(sanitizedRoot);
       errorBox.style.display = "none";
       diagramEl.style.display = "inline-block";
-      diagramEl.innerHTML = svg;
+      diagramEl.replaceChildren(document.importNode(sanitizedRoot, true));
 
       const svgElement = diagramEl.querySelector("svg");
       if (svgElement) {
@@ -278,11 +413,15 @@ btnPng.addEventListener("click", () => {
   if (!currentSvg) return;
   const width = baseWidth || 800;
   const height = baseHeight || 600;
-  const scale = 2; // 2x resolution for crisp PNG export
+  const desiredScale = 2; // 2x resolution for crisp PNG export
+  const scale = Math.min(
+    desiredScale,
+    MAX_PNG_DIMENSION / Math.max(width, height, 1),
+  );
 
   const canvas = document.createElement("canvas");
-  canvas.width = width * scale;
-  canvas.height = height * scale;
+  canvas.width = Math.max(1, Math.round(width * scale));
+  canvas.height = Math.max(1, Math.round(height * scale));
   const ctx = canvas.getContext("2d");
 
   const img = new Image();
