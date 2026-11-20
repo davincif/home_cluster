@@ -34,3 +34,4 @@ coding instructions:
 
 - must be always in english.
 - must always consider clarity, good naming, modularity, maintainability, and clean code conversions.
+- Always stay vigilant for vulnerabilities. Protect the cluster and all applications from leaks, attacks, and unauthorized access through strong sysadmin, development, and DevOps practices.

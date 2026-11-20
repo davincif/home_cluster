@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Go Playground (Yaegi WASM) — Web Playgrounds</title>
+    <link rel="stylesheet" href="/shared/theme.css" />
+  </head>
+  <body>
+    <div id="nav-root"></div>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <button id="btn-run" class="btn btn-primary" type="button" disabled>
+          <span>Run</span>
+          <span class="shortcut-hint">Ctrl+Enter</span>
+        </button>
+        <button id="btn-stop" class="btn btn-danger" type="button" disabled>
+          Stop
+        </button>
+        <label for="example-select" class="status-text">Examples:</label>
+        <select id="example-select" class="select-input" aria-label="Go code examples"></select>
+      </div>
+
+      <div class="toolbar-group">
+        <span id="status-text" class="status-text">Loading Yaegi WASM...</span>
+        <button id="btn-reset" class="btn" type="button">Reset</button>
+        <button id="btn-clear" class="btn" type="button">Clear Output</button>
+      </div>
+    </div>
+
+    <main class="workspace">
+      <section class="editor-pane" aria-label="Go code editor">
+        <div id="editor-container"></div>
+      </section>
+
+      <section class="output-pane" aria-label="Execution output">
+        <div class="output-tabs">
+          <div class="tab-list" role="tablist">
+            <button
+              class="tab-btn is-active"
+              type="button"
+              role="tab"
+              aria-selected="true"
+            >
+              Output (stdout / stderr)
+            </button>
+          </div>
+          <span id="exec-meta" class="status-text"></span>
+        </div>
+
+        <div id="console-output" class="output-panel" role="tabpanel">
+          <div class="console-empty">Press Run (Ctrl+Enter) to execute Go code via Yaegi WASM.</div>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="/go/app.js"></script>
+  </body>
+</html>

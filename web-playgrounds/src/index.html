@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>JS / TypeScript Playground — Web Playgrounds</title>
+    <link rel="stylesheet" href="/shared/theme.css" />
+  </head>
+  <body>
+    <div id="nav-root"></div>
+
+    <div class="toolbar">
+      <div class="toolbar-group">
+        <button id="btn-run" class="btn btn-primary" type="button" disabled>
+          <span>Run</span>
+          <span class="shortcut-hint">Ctrl+Enter</span>
+        </button>
+        <button id="btn-stop" class="btn btn-danger" type="button" disabled>
+          Stop
+        </button>
+        <label for="lang-select" class="status-text">Mode:</label>
+        <select id="lang-select" class="select-input" aria-label="Language mode">
+          <option value="ts">TypeScript</option>
+          <option value="js">JavaScript</option>
+        </select>
+        <label for="example-select" class="status-text">Examples:</label>
+        <select id="example-select" class="select-input" aria-label="Code examples"></select>
+      </div>
+
+      <div class="toolbar-group">
+        <span id="status-text" class="status-text">Loading engine...</span>
+        <button id="btn-reset" class="btn" type="button">Reset</button>
+        <button id="btn-clear" class="btn" type="button">Clear Output</button>
+      </div>
+    </div>
+
+    <main class="workspace">
+      <section class="editor-pane" aria-label="Code editor">
+        <div id="editor-container"></div>
+      </section>
+
+      <section class="output-pane" aria-label="Execution output">
+        <div class="output-tabs">
+          <div class="tab-list" role="tablist">
+            <button
+              id="tab-console"
+              class="tab-btn is-active"
+              type="button"
+              role="tab"
+              aria-selected="true"
+            >
+              Console
+            </button>
+            <button
+              id="tab-transpiled"
+              class="tab-btn"
+              type="button"
+              role="tab"
+              aria-selected="false"
+            >
+              Transpiled JS
+            </button>
+          </div>
+          <span id="exec-meta" class="status-text"></span>
+        </div>
+
+        <div id="console-output" class="output-panel" role="tabpanel">
+          <div class="console-empty">Press Run (Ctrl+Enter) to execute code in the sandbox.</div>
+        </div>
+
+        <div id="transpiled-output" class="output-panel is-hidden" role="tabpanel">
+          <pre id="transpiled-code" class="transpiled-code">// Transpiled JavaScript will appear here after running.</pre>
+        </div>
+      </section>
+    </main>
+
+    <div id="sandbox-host" class="sandbox-host" aria-hidden="true"></div>
+
+    <script type="module" src="/js/app.js"></script>
+  </body>
+</html>
